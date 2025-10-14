@@ -52,6 +52,18 @@ void execute(const string &input) {
         cout << "变量 " << var_name << " = " << var_value << "已保存\n\n";
         return;
     }
+
+    if(line.rfind("print ", 0) == 0) {
+        string to_print = line.substr(6); // 去掉 "print " 前缀
+
+        // 检查是否已定义变量
+        if (variables.find(to_print) != variables.end()) {  // 如果 find 没有找到，返回 end() —— 容器末尾标记，不指向任何元素
+            cout << variables[to_print] << "\n\n";
+        } else {
+            cout << to_print << "\n\n"; // 不是变量，就直接打印内容
+        }
+        return;
+    }
 }
 
 int main() {
