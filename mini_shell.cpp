@@ -1,6 +1,7 @@
 #include <iostream>  // 输入输出
 #include <string>    // 字符串类
 #include <unordered_map> // 哈希表
+#include <vector>   // 向量类 
 
 using namespace std;
 
@@ -20,6 +21,20 @@ string trim(const string &s) {
     return s.substr(start, end - start + 1);
 }
 
+// 把字符串分割成list
+vector<string> split(const string &s, char delimiter) {
+    vector<string> result;
+    size_t start = 0;
+    while (start < s.size()) {
+        size_t pos = s.find(delimiter, start);
+        string token = trim(s.substr(start, pos - start));
+        if(!token.empty()) result.push_back(token); // 在向量末尾添加token
+        if (pos == string::npos) break; // 没有找到分隔符，结束循环
+        start = pos + 1; // 移动到下一个字符
+    }
+    return result;
+}
+
 // 执行命令
 void execute(const string &input) {
     string line = trim(input);  // 去掉输入两边的空格
@@ -32,6 +47,16 @@ void execute(const string &input) {
         // 程序会立即结束，不再执行后续代码
     }
 
+    if (line == "help") {
+        cout << "支持的命令：\n";
+        // cout << "  let 变量名 = 整数值   定义变量\n";
+        cout << "  print 内容            打印内容或变量值\n";
+        cout << "  quit                  退出程序\n";
+        cout << "  help                  显示帮助信息\n\n";
+        return;
+    }
+
+    /*
     // let命令
     // std::string::rfind 从右往左查找并返回位置 rfind("abc", 起始位置)
     if(line.rfind("let ", 0) == 0) {
@@ -52,6 +77,7 @@ void execute(const string &input) {
         cout << "变量 " << var_name << " = " << var_value << "已保存\n\n";
         return;
     }
+    */
 
     if(line.rfind("print ", 0) == 0) {
         string to_print = line.substr(6); // 去掉 "print " 前缀
@@ -61,6 +87,29 @@ void execute(const string &input) {
             cout << variables[to_print] << "\n\n";
         } else {
             cout << to_print << "\n\n"; // 不是变量，就直接打印内容
+        }
+        return;
+    }
+
+    size_t eq = line.find('='); // 查找等号位置
+    if (eq != string::npos) {
+        string left = trim(line.substr(0, eq)); // 变量名
+        string right = trim(line.substr(eq + 1)); // 变量值
+
+        vector<string> var_names = split(left, ','); // 支持多个变量名，用逗号分隔
+
+        try {
+            int value = stoi(right); // 字符串转整数
+            for (auto &vars : var_names) {
+                variables[vars] = value; // 存入哈希表
+                cout << "变量 " << vars << " = " << value << " 已保存\n\n";
+            }
+        } catch (const std::invalid_argument &e) {
+            cout << "错误：目前只能保存整数值\n\n";
+            return;
+        } catch (const std::out_of_range &e) {
+            cout << "错误：整数值超出范围\n\n";
+            return;
         }
         return;
     }
