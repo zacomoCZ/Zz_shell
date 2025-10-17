@@ -50,14 +50,17 @@ void execute(const string &input) {
     if (line == "help") {
         cout << "支持的命令：\n";
         // cout << "  let 变量名 = 整数值   定义变量\n";
-        cout << "  print 内容            打印内容或变量值\n";
-        cout << "  quit                  退出程序\n";
-        cout << "  help                  显示帮助信息\n\n";
+        cout << "  print 内容   打印内容或变量值\n";
+        cout << "  a = <int>    - 声明或修改变量 (目前仅整数)\n";
+        cout << "  quit         退出程序\n";
+        cout << "  help         显示帮助信息\n";
+        cout << "  vars         列出所有已定义变量\n";
+        cout << "\n";
         return;
     }
 
     /*
-    // let命令
+    // let命令(已移除let命令，改为直接使用 变量名=整数值 语法)
     // std::string::rfind 从右往左查找并返回位置 rfind("abc", 起始位置)
     if(line.rfind("let ", 0) == 0) {
         // std::string::substr 从起始位置开始，截取指定长度的子串 substr(起始位置, 截取长度)
@@ -113,12 +116,25 @@ void execute(const string &input) {
         }
         return;
     }
+
+    if (line == "vars") {
+        if (variables.empty()) {
+            cout << "目前没有定义变量\n";
+            return;
+        } else {
+            cout << "已定义变量:\n";
+            for (auto &vars : variables) {
+                cout << vars.first << " = " << vars.second << "\n";
+            }
+            return;
+        }
+    }
 }
 
 int main() {
     string input;  // 用来保存用户输入的内容
 
-    cout << "MiniShell 启动！输入 quit 退出。\n";
+    cout << "Zz_shell 启动！输入 quit 退出, 输入help显示所有指令。\n";
 
     // 无限循环，一直等待用户输入
     while (true) {
