@@ -84,13 +84,47 @@ void execute(const string &input) {
 
     if(line.rfind("print ", 0) == 0) {
         string to_print = line.substr(6); // 去掉 "print " 前缀
-
-        // 检查是否已定义变量
-        if (variables.find(to_print) != variables.end()) {  // 如果 find 没有找到，返回 end() —— 容器末尾标记，不指向任何元素
-            cout << variables[to_print] << "\n\n";
-        } else {
-            cout << to_print << "\n\n"; // 不是变量，就直接打印内容
+        // 如果打印内容为空
+        if (to_print.empty()) {
+            cout << "错误：print 语法错误，缺少内容\n\n";
+            return;
         }
+
+        vector<string> print_contents = split(to_print, ','); // 支持多个打印内容，用逗号分隔
+        string print_output;    // 用于存储最终的打印输出结果
+
+        // 处理每个打印内容
+        for (auto &contents : print_contents) {
+            // 检查是否是字符串（用引号括起来的内容）
+            if (contents.front() == '"' && contents.back() == '"') {
+                // 去掉引号，直接打印字符串内容
+                // 目前无法使用\n等转义字符
+                string str_content = contents.substr(1, contents.size() - 2);
+                print_output += str_content;
+            }else if (variables.find(contents) != variables.end()) {
+                // 如果是已定义的变量，打印变量值
+                print_output += to_string(variables[contents]);
+            }else {
+                cout << "错误：未定义的变量或不支持的内容类型: " << contents << "\n\n";
+                return;
+                /*
+                // 如果是数字，直接打印数字
+                try {
+                    int num = stoi(contents);
+                    print_output += to_string(num);
+                } catch (...) {
+                    // 不是数字类型继续检测浮点数
+                }
+                // 检查是否是浮点数
+                try {
+                    
+                } catch (...) {
+                    // 不是浮点数类型继续检测变量
+                }
+                */
+            }
+        }
+        cout << print_output << "\n\n";
         return;
     }
 
@@ -99,14 +133,15 @@ void execute(const string &input) {
         string left = trim(line.substr(0, eq)); // 变量名
         string right = trim(line.substr(eq + 1)); // 变量值
 
-        vector<string> var_names = split(left, ','); // 支持多个变量名，用逗号分隔
+        vector<string> var_names = split(left, ','); // 支持多个变量同时赋值，用逗号分隔
 
         try {
             int value = stoi(right); // 字符串转整数
             for (auto &vars : var_names) {
                 variables[vars] = value; // 存入哈希表
-                cout << "变量 " << vars << " = " << value << " 已保存\n\n";
+                cout << "变量 " << vars << " = " << value << " 已保存\n";
             }
+            cout << "\n";
         } catch (const std::invalid_argument &e) {
             cout << "错误：目前只能保存整数值\n\n";
             return;
