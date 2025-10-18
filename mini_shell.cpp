@@ -22,22 +22,8 @@ string trim(const string &s) {
     return s.substr(start, end - start + 1);
 }
 
-// 把字符串分割成list
-vector<string> split(const string &s, char delimiter) {
-    vector<string> result;
-    size_t start = 0;
-    while (start < s.size()) {
-        size_t pos = s.find(delimiter, start);
-        string token = trim(s.substr(start, pos - start));
-        if(!token.empty()) result.push_back(token); // 在向量末尾添加token
-        if (pos == string::npos) break; // 没有找到分隔符，结束循环
-        start = pos + 1; // 移动到下一个字符
-    }
-    return result;
-}
-
 bool validateNumber(const string &str) {
-    if (str == "") return "false"; // 空字符串不是数字
+    if (str == "") return false; // 空字符串不是数字
 
     // 使用正则表达式验证是否为整数或浮点数
     regex number_regex(R"(^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$)");
@@ -96,11 +82,40 @@ bool validateNumber(const string &str) {
     *   并确保整个字符串完全符合数字的格式（因为用了 ^ 和 $ 锚点）。
     */
 
-    if (regex_match(str, number_regex)) {
-        return "true"; // 是数字
-    } else {
-        return "false"; // 不是数字
+    return regex_match(str, number_regex);
+}
+
+// 把字符串分割成list
+vector<string> splitStr(const string &s, char delimiter) {
+    vector<string> result;
+    size_t start = 0;
+    while (start < s.size()) {
+        size_t pos = s.find(delimiter, start);
+        string token = trim(s.substr(start, pos - start));
+        if(!token.empty()) result.push_back(token); // 在向量末尾添加token
+        if (pos == string::npos) break; // 没有找到分隔符，结束循环
+        start = pos + 1; // 移动到下一个字符
     }
+    return result;
+}
+
+vector<int> splitInts(const string &s, char delimiter) {
+    vector<int> result;
+    size_t start = 0;
+    while (start < s.size()) {
+        size_t pos = s.find(delimiter, start);
+        string token = trim(s.substr(start, pos - start));
+        if(!token.empty()) {
+            try {
+                result.push_back(stoi(token)); // 在向量末尾添加转换后的整数
+            } catch (const std::invalid_argument &e) {
+                throw invalid_argument("无法将 '" + token + "' 转换为整数");
+            }
+        }
+        if (pos == string::npos) break; // 没有找到分隔符，结束循环
+        start = pos + 1; // 移动到下一个字符
+    }
+    return result;
 }
 
 // 执行命令
@@ -158,7 +173,7 @@ void execute(const string &input) {
             return;
         }
 
-        vector<string> print_contents = split(to_print, ','); // 支持多个打印内容，用逗号分隔
+        vector<string> print_contents = splitStr(to_print, ','); // 支持多个打印内容，用逗号分隔
         string print_output;    // 用于存储最终的打印输出结果
 
         // 处理每个打印内容
@@ -198,25 +213,41 @@ void execute(const string &input) {
         string left = trim(line.substr(0, eq)); // 变量名
         string right = trim(line.substr(eq + 1)); // 变量值
 
-        vector<string> var_names = split(left, ','); // 支持多个变量同时赋值，用逗号分隔
+        vector<string> var_names = splitStr(left, ','); // 支持多个变量同时赋值，用逗号分隔
 
-        try {
-            int value = stoi(right); // 字符串转整数
-            for (auto &vars : var_names) {
-                variables[vars] = value; // 存入哈希表
-                cout << "变量 " << vars << " = " << value << " 已保存\n";
+        if (right.find(',') == string::npos) {
+            // 只有一个值，赋值给所有变量
+            try {
+                int value = stoi(right); // 字符串转整数
+                for (auto &vars : var_names) {
+                    variables[vars] = value; // 存入哈希表
+                    cout << "变量 " << vars << " = " << value << " 已保存\n";
+                }
+                cout << "\n";
+                return;
+            } catch (const std::invalid_argument &e) {
+                cout << "错误：目前只能保存整数值\n\n";
+                return;
+            } catch (const std::out_of_range &e) {
+                cout << "错误：整数值超出范围\n\n";
+                return;
+            }
+        }else {
+            vector<int> values = splitInts(right, ','); // 支持多个值，用逗号分隔
+            if (var_names.size() != values.size()) {
+                cout << "错误：变量数量与值数量不匹配\n\n";
+                return;
+            }
+            for (size_t i = 0; i < var_names.size(); ++i) {
+                variables[var_names[i]] = values[i]; // 存入哈希表
+                cout << "变量 " << var_names[i] << " = " << values[i] << " 已保存\n";
             }
             cout << "\n";
-        } catch (const std::invalid_argument &e) {
-            cout << "错误：目前只能保存整数值\n\n";
-            return;
-        } catch (const std::out_of_range &e) {
-            cout << "错误：整数值超出范围\n\n";
             return;
         }
-        return;
     }
-
+    
+    // 列出所有已定义变量
     if (line == "vars") {
         if (variables.empty()) {
             cout << "目前没有定义变量\n";
@@ -226,6 +257,7 @@ void execute(const string &input) {
             for (auto &vars : variables) {
                 cout << vars.first << " = " << vars.second << "\n";
             }
+            cout << "\n";
             return;
         }
     }
