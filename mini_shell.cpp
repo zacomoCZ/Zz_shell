@@ -1,7 +1,8 @@
 #include <iostream>  // 输入输出
 #include <string>    // 字符串类
 #include <unordered_map> // 哈希表
-#include <vector>   // 向量类 
+#include <vector>   // 向量类
+#include <regex>   // 正则表达式
 
 using namespace std;
 
@@ -33,6 +34,73 @@ vector<string> split(const string &s, char delimiter) {
         start = pos + 1; // 移动到下一个字符
     }
     return result;
+}
+
+bool validateNumber(const string &str) {
+    if (str == "") return "false"; // 空字符串不是数字
+
+    // 使用正则表达式验证是否为整数或浮点数
+    regex number_regex(R"(^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$)");
+    /*
+    * 定义正则表达式：
+    *   std::regex number_regex(R"(^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$)");
+    *
+    * 功能说明：
+    *   这行代码创建了一个名为 number_regex 的“正则表达式对象”，
+    *   用来判断字符串是否是一个数字（包括整数、小数和科学计数法）。
+    *
+    * 组成部分讲解：
+    *   std::regex
+    *     → C++ 的“正则表达式”类，用来匹配字符串内容。
+    *
+    *   number_regex
+    *     → 我给这个正则表达式对象起的名字。
+    *
+    *   R"( ... )"
+    *     → C++ 的“原始字符串”语法。
+    *       在普通字符串中我们必须写两个反斜杠 "\\" 来表示一个 "\"，
+    *       但在原始字符串中不用转义，写正则表达式更清晰。
+    *
+    * 正则表达式结构（一步步拆解）：
+    *
+    *   ^                → 匹配字符串开头。
+    *
+    *   [+-]?            → 可选的正号 "+" 或负号 "-"。
+    *                      问号表示“出现 0 次或 1 次”。
+    *
+    *   (\d+(\.\d*)?|\.\d+)
+    *                      → 匹配整数或小数：
+    *                        \d+       → 一个或多个数字（例如 123）
+    *                        (\.\d*)?  → 可选的小数点部分（例如 .45 或 .）
+    *                        |         → 或者（表示另一种可能）
+    *                        \.\d+     → 没有整数部分的纯小数（例如 .5）
+    *
+    *   ([eE][+-]?\d+)?   → 可选的科学计数法部分：
+    *                        [eE]     → e 或 E
+    *                        [+-]?    → 可选正负号
+    *                        \d+      → 至少一位数字（例如 e10、E-5、e+3）
+    *
+    *   $                → 匹配字符串结尾。
+    *
+    * 匹配举例：
+    *   "123"       ✅ 整数
+    *   "-45.6"     ✅ 小数
+    *   ".5"        ✅ 小数（没有整数部分）
+    *   "+1.2e10"   ✅ 科学计数法
+    *   "abc"       ❌ 非数字
+    *   "1e"        ❌ 不完整的科学计数法
+    *
+    * 总结：
+    *   这个正则表达式可以匹配所有合法的数字格式，
+    *   包括正负号、小数点、以及科学计数法形式，
+    *   并确保整个字符串完全符合数字的格式（因为用了 ^ 和 $ 锚点）。
+    */
+
+    if (regex_match(str, number_regex)) {
+        return "true"; // 是数字
+    } else {
+        return "false"; // 不是数字
+    }
 }
 
 // 执行命令
@@ -105,23 +173,20 @@ void execute(const string &input) {
                 // 如果是已定义的变量，打印变量值
                 print_output += to_string(variables[contents]);
             }else {
+                // 检查是否是数字类型
+                try {
+                    if (validateNumber(contents)) {
+                        print_output += contents; // 直接打印数字字符串
+                        continue;
+                    }
+                } catch (...) {
+                    // 不是数字类型继续检测变量
+                }
+                // 后续可用try添加对其他类型的支持
+
+                // 未定义的变量或不支持的内容类型，打印错误信息并返回
                 cout << "错误：未定义的变量或不支持的内容类型: " << contents << "\n\n";
                 return;
-                /*
-                // 如果是数字，直接打印数字
-                try {
-                    int num = stoi(contents);
-                    print_output += to_string(num);
-                } catch (...) {
-                    // 不是数字类型继续检测浮点数
-                }
-                // 检查是否是浮点数
-                try {
-                    
-                } catch (...) {
-                    // 不是浮点数类型继续检测变量
-                }
-                */
             }
         }
         cout << print_output << "\n\n";
