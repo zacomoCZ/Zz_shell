@@ -221,6 +221,10 @@ void execute(const string &input) {
             try {
                 int value = stoi(right); // 字符串转整数
                 for (auto &vars : var_names) {
+                    if (isdigit(vars[0])) {
+                        cout << "错误：变量名 '" << vars << "' 非法，变量名只能包含字母、数字和下划线，且不能以数字开头\n\n";
+                        return;
+                    }
                     variables[vars] = value; // 存入哈希表
                     cout << "变量 " << vars << " = " << value << " 已保存\n";
                 }
