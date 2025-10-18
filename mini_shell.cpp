@@ -3,6 +3,7 @@
 #include <unordered_map> // 哈希表
 #include <vector>   // 向量类
 #include <regex>   // 正则表达式
+#include <windows.h> // Windows 控制台编码设置
 
 using namespace std;
 
@@ -264,8 +265,13 @@ void execute(const string &input) {
 }
 
 int main() {
+    // 设置控制台为UTF-8编码，支持中文输出
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     string input;  // 用来保存用户输入的内容
 
+    cout << "编码已设置为 UTF-8\n";
     cout << "Zz_shell 启动！输入 quit 退出, 输入help显示所有指令。\n";
 
     // 无限循环，一直等待用户输入
