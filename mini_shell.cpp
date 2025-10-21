@@ -266,6 +266,13 @@ void execute(const string &input) {
             return;
         }
     }
+
+    // 清屏指令
+    if (line == "clear") {
+        system("cls"); // Windows 下清屏命令
+        return;
+    }
+
 }
 
 int main() {
