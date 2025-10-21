@@ -273,6 +273,17 @@ void execute(const string &input) {
         return;
     }
 
+    // 删除变量指令
+    if (line.rfind("del", 0) == 0) {
+        string var_to_delete = trim(line.substr(3)); // 去掉 "del" 前缀
+        if (variables.find(var_to_delete) != variables.end()) {
+            variables.erase(var_to_delete); // 删除变量
+            cout << "变量" << var_to_delete << "已删除" << "\n";
+        } else {
+            cout << "错误：变量" << var_to_delete << "未定义，无法删除" << "\n";
+        }
+    }
+
 }
 
 int main() {
